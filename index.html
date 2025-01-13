@@ -185,7 +185,6 @@
         <pre id="generated-code"></pre>
         <button id="copy-button">Copiar Código</button>
     </div>
-
     <script>
         const numeroInput = document.getElementById('numero');
         const cerrarInput = document.getElementById('cerrar');
@@ -194,19 +193,15 @@
         const texturaInput = document.getElementById('textura');
         const instruccionesInput = document.getElementById('instrucciones');
         const addGameButton = document.getElementById('add-game');
-
         const previewNumber = document.getElementById('preview-number');
         const previewTitle = document.getElementById('preview-title');
         const previewSpecial = document.getElementById('preview-special');
         const previewTexture = document.getElementById('preview-texture');
         const previewInstructions = document.getElementById('preview-instructions');
-
         const gamesContainer = document.getElementById('games-container');
         const generatedCode = document.getElementById('generated-code');
         const copyButton = document.getElementById('copy-button');
         let games = [];
-
-        // Actualizar la previsualización en tiempo real
         function updatePreview() {
             previewNumber.textContent = `Juego ${numeroInput.value || '0'}`;
             previewTitle.textContent = tituloInput.value || 'Título';
@@ -214,8 +209,6 @@
             previewTexture.textContent = texturaInput.value ? '📷' : 'Imagen';
             previewInstructions.textContent = `Instrucciones\n${instruccionesInput.value || ''}`;
         }
-
-        // Agregar un nuevo juego a la lista
         function addGame() {
             const newGame = {
                 title: tituloInput.value,
@@ -231,8 +224,6 @@
             updateGeneratedCode();
             clearInputs();
         }
-
-        // Limpiar los campos del formulario
         function clearInputs() {
             tituloInput.value = '';
             misionesInput.value = '';
@@ -240,8 +231,6 @@
             instruccionesInput.value = '';
             updatePreview();
         }
-
-        // Renderizar la lista de juegos
         function renderGames() {
             gamesContainer.innerHTML = '';
             games.forEach((game, index) => {
@@ -254,33 +243,23 @@
                 gamesContainer.appendChild(gameItem);
             });
         }
-
-        // Eliminar un juego de la lista
         function removeGame(index) {
             games.splice(index, 1);
             renderGames();
             updateGeneratedCode();
         }
-
-        // Actualizar el código generado
         function updateGeneratedCode() {
-            const code = `const menus = ${JSON.stringify(games, null, 2)};`;
+            const code = `${JSON.stringify(games, null, 2)};`;
             generatedCode.textContent = code;
         }
-
-        // Copiar el código al portapapeles
         function copyToClipboard() {
-            const text = generatedCode.textContent;
+            const text = JSON.stringify(games);
             navigator.clipboard.writeText(text).then(() => {
-                alert('¡Código copiado al portapapeles!');
+                alert('¡Código copiado al portapapeles en una sola línea!');
             });
         }
-
-        // Eventos
         addGameButton.addEventListener('click', addGame);
         copyButton.addEventListener('click', copyToClipboard);
-
-        // Actualizar la previsualización cuando los valores cambien
         numeroInput.addEventListener('input', updatePreview);
         cerrarInput.addEventListener('input', updatePreview);
         tituloInput.addEventListener('input', updatePreview);
