@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Menu Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            margin-top: 5px;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: black;
+        }
+
+        table th,
+        table td {
+            height: 40px;
+            border: 2px solid #ccc;
+            padding: 10px;
+            text-align: center;
+            align-items: center;
+            color: white;
+            white-space: pre-wrap;
+        }
+
+        table th {
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+
+        .preview-container {
+            margin-top: 20px;
+            border: 1px solid #000000;
+            padding: 10px;
+        }
+
+        .game-list {
+            margin-top: 20px;
+        }
+
+        .game-item {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .game-item button {
+            background-color: #dc3545;
+        }
+
+        .game-item button:hover {
+            background-color: #a71d2a;
+        }
+
+        #preview-special,
+        #preview-texture {
+            height: 120px;
+            width: 50%;
+            text-align: center;
+            /* Opcional: centra el contenido horizontalmente */
+            vertical-align: middle;
+            /* Opcional: alinea el contenido verticalmente */
+            word-wrap: break-word;
+            /* Ajusta el texto al ancho disponible */
+        }
+
+        #code-container {
+            margin-top: 20px;
+            background-color: #f4f4f4;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #copy-button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #copy-button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Gestor de Juegos</h1>
+    <div>
+        <h2>Editor de Juego</h2>
+        <label for="numero">Numero:</label>
+        <input type="number" id="numero" placeholder="Numero de juego">
+
+        <label for="titulo">Título:</label>
+        <input type="text" id="titulo" placeholder="Título del juego (Ej: Dulces Sueños)">
+
+        <label for="misiones">Misiones Especiales:</label>
+        <textarea id="misiones" placeholder="Descripción de misiones especiales..."></textarea>
+
+        <label for="textura">Textura:</label>
+        <input type="text" id="textura" placeholder="URL o ID de textura">
+
+        <label for="instrucciones">Instrucciones:</label>
+        <textarea id="instrucciones" placeholder="Descripción de instrucciones..."></textarea>
+
+        <label for="cerrar">Tiempo de cierre:</label>
+        <input type="number" id="cerrar" placeholder="Tiempo para cerrar menu">
+
+        <button id="add-game">Agregar Juego</button>
+    </div>
+
+    <div class="preview-container">
+        <h2>Previsualización</h2>
+        <table>
+            <tbody>
+                <tr>
+                    <td colspan="2" id="preview-number">Número del juego</td>
+                </tr>
+                <tr>
+                    <td colspan="2" id="preview-title">Título</td>
+                </tr>
+                <tr>
+                    <td id="preview-special" style="height: 100px; vertical-align: top; text-align: left;">Misiones especiales</td>
+                    <td id="preview-texture" style="font-size: xx-large;">Imagen</td>
+                </tr>
+                <tr>
+                    <td colspan="2" id="preview-instructions"
+                        style="height: 100px; vertical-align: top; text-align: left;">Instrucciones</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="game-list">
+        <h2>Lista de Juegos Añadidos</h2>
+        <div id="games-container"></div>
+    </div>
+
+    <div id="code-container">
+        <h2>Código Generado del Menú</h2>
+        <pre id="generated-code"></pre>
+        <button id="copy-button">Copiar Código</button>
+    </div>
+
+    <script>
+        const numeroInput = document.getElementById('numero');
+        const cerrarInput = document.getElementById('cerrar');
+        const tituloInput = document.getElementById('titulo');
+        const misionesInput = document.getElementById('misiones');
+        const texturaInput = document.getElementById('textura');
+        const instruccionesInput = document.getElementById('instrucciones');
+        const addGameButton = document.getElementById('add-game');
+
+        const previewNumber = document.getElementById('preview-number');
+        const previewTitle = document.getElementById('preview-title');
+        const previewSpecial = document.getElementById('preview-special');
+        const previewTexture = document.getElementById('preview-texture');
+        const previewInstructions = document.getElementById('preview-instructions');
+
+        const gamesContainer = document.getElementById('games-container');
+        const generatedCode = document.getElementById('generated-code');
+        const copyButton = document.getElementById('copy-button');
+        let games = [];
+
+        // Actualizar la previsualización en tiempo real
+        function updatePreview() {
+            previewNumber.textContent = `Juego ${numeroInput.value || '0'}`;
+            previewTitle.textContent = tituloInput.value || 'Título';
+            previewSpecial.textContent = `Misiones especiales\n${misionesInput.value || ''}`;
+            previewTexture.textContent = texturaInput.value ? '📷' : 'Imagen';
+            previewInstructions.textContent = `Instrucciones\n${instruccionesInput.value || ''}`;
+        }
+
+        // Agregar un nuevo juego a la lista
+        function addGame() {
+            const newGame = {
+                title: tituloInput.value,
+                number: Number(numeroInput.value),
+                special: misionesInput.value,
+                texture: texturaInput.value,
+                instructions: instruccionesInput.value,
+                closeTime: Number(cerrarInput.value)
+            };
+
+            games.push(newGame);
+            renderGames();
+            updateGeneratedCode();
+            clearInputs();
+        }
+
+        // Limpiar los campos del formulario
+        function clearInputs() {
+            tituloInput.value = '';
+            misionesInput.value = '';
+            texturaInput.value = '';
+            instruccionesInput.value = '';
+            updatePreview();
+        }
+
+        // Renderizar la lista de juegos
+        function renderGames() {
+            gamesContainer.innerHTML = '';
+            games.forEach((game, index) => {
+                const gameItem = document.createElement('div');
+                gameItem.className = 'game-item';
+                gameItem.innerHTML = `
+                <span>${game.number}. ${game.title}</span>
+                    <button onclick="removeGame(${index})">Eliminar</button>
+                `;
+                gamesContainer.appendChild(gameItem);
+            });
+        }
+
+        // Eliminar un juego de la lista
+        function removeGame(index) {
+            games.splice(index, 1);
+            renderGames();
+            updateGeneratedCode();
+        }
+
+        // Actualizar el código generado
+        function updateGeneratedCode() {
+            const code = `const menus = ${JSON.stringify(games, null, 2)};`;
+            generatedCode.textContent = code;
+        }
+
+        // Copiar el código al portapapeles
+        function copyToClipboard() {
+            const text = generatedCode.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('¡Código copiado al portapapeles!');
+            });
+        }
+
+        // Eventos
+        addGameButton.addEventListener('click', addGame);
+        copyButton.addEventListener('click', copyToClipboard);
+
+        // Actualizar la previsualización cuando los valores cambien
+        numeroInput.addEventListener('input', updatePreview);
+        cerrarInput.addEventListener('input', updatePreview);
+        tituloInput.addEventListener('input', updatePreview);
+        misionesInput.addEventListener('input', updatePreview);
+        texturaInput.addEventListener('input', updatePreview);
+        instruccionesInput.addEventListener('input', updatePreview);
+    </script>
+</body>
+
+</html>
